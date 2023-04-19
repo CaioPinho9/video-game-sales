@@ -8,9 +8,7 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ```{r}
-# CARREGAR O PACOTE
 library(data.table)
-# LEITURA DA BASE
 base =
   fread(
     input = paste0("vgsales.csv"),
@@ -26,53 +24,52 @@ colnames(base) = c(
   "Ano",
   "Genero",
   "Publicadora",
-  "AM_Vendas",
+  "AN_Vendas",
   "EU_Vendas",
-  "JP_VENDAS",
+  "JP_Vendas",
   "Outras_Vendas",
   "Globais_Vendas"
 )
+base$AN_Vendas = as.numeric(base$AN_Vendas)
+base$EU_Vendas = as.numeric(base$EU_Vendas)
+base$JP_Vendas = as.numeric(base$JP_Vendas)
+base$Outras_Vendas = as.numeric(base$Outras_Vendas)
+base$Globais_Vendas = as.numeric(base$Globais_Vendas)
+
+
 write.csv2(base, "base.csv", row.names = FALSE)
 ```
 
-
 ```{r}
-base =
-  fread(
-    input = paste0("base.csv"),
-    header = T,
-    na.strings = "NA",
-    data.table = FALSE,
-    dec = "."
-  )
-```
-
-```{r}
-# UMA VARIAVEL QUALITATIVA: TABELA DE FREQUENCIA
 freq.tabela = table(base$Genero, useNA = "ifany")
 porc.tabela = round(prop.table(freq.tabela) * 100, 1)
 freq.tabela = data.frame(freq.tabela, porc.tabela)
 freq.tabela = freq.tabela[, -3]
 colnames(freq.tabela) = c("Genero", "Frequencia", "Porcentagem")
+genero = freq.tabela[order(-freq.tabela$Frequencia),]
 
-# GRAFICO DE SETORES "GENERO"
-png(file = "genero.png")
-pie(freq.tabela$Frequencia, freq.tabela$Genero,
-    main = "Gênero")
-dev.off()
+genero$Percentagem = genero$Frequencia / sum(genero$Frequencia) * 100
+top_10 = genero[1:10,]
+
+par(mar = c(20, 20, 20, 20))
+
+ggplot(top_10, aes(x = Frequencia, y = reorder(Genero, Frequencia), fill = Genero)) +
+  geom_bar(stat = "identity", width = 0.5) +
+  labs(title = "Gêneros mais comuns em jogos") +
+  theme(legend.position = "bottom") +
+  xlab("Frequência") +
+  ylab("Gêneros") + 
+  geom_text(aes(label = paste0(round(Percentagem), "%")),
+            hjust = 0, size = 3.5)
 ```
 
 ```{r}
-# UMA VARIAVEL QUALITATIVA: TABELA DE FREQUENCIA
 freq.tabela = table(base$Publicadora, useNA = "ifany")
 freq.tabela = data.frame(freq.tabela)
 colnames(freq.tabela) = c("Publicadora", "Frequencia")
 
 publicadora = freq.tabela[order(-freq.tabela$Frequencia),]
-```
 
-```{r}
-# BAR CHART PUBLICADORA
 publicadora$Percentagem = publicadora$Frequencia / sum(publicadora$Frequencia) * 100
 top_10 = publicadora[1:10,]
 
@@ -80,25 +77,21 @@ par(mar = c(20, 20, 20, 20))
 
 ggplot(top_10, aes(x = Frequencia, y = reorder(Publicadora, Frequencia), fill = Publicadora)) +
   geom_bar(stat = "identity", width = 0.5) +
-  labs(title = "Top 10 Publicadoras") +
+  labs(title = "Empresas que mais publicaram jogos") +
   theme(legend.position = "bottom") +
-  xlab("Frequencia") +
+  xlab("Frequência") +
   ylab("Publicadoras") + 
   geom_text(aes(label = paste0(round(Percentagem), "%")),
             hjust = 0, size = 3.5)
 ```
 
 ```{r}
-# UMA VARIAVEL QUALITATIVA: TABELA DE FREQUENCIA
 freq.tabela = table(base$Plataforma, useNA = "ifany")
 freq.tabela = data.frame(freq.tabela)
 colnames(freq.tabela) = c("Plataforma", "Frequencia")
 
 plataforma = freq.tabela[order(-freq.tabela$Frequencia),]
-```
 
-```{r}
-# BAR CHART PLATAFORMA
 plataforma$Percentagem = plataforma$Frequencia / sum(plataforma$Frequencia) * 100
 top_10 = plataforma[1:10,]
 
@@ -106,9 +99,9 @@ par(mar = c(20, 20, 20, 20))
 
 ggplot(top_10, aes(x = Frequencia, y = reorder(Plataforma, Frequencia), fill = Plataforma)) +
   geom_bar(stat = "identity", width = 0.5) +
-  labs(title = "Top 10 Plataformas") +
+  labs(title = "Plataformas que possuem mais jogos") +
   theme(legend.position = "bottom") +
-  xlab("Frequencia") +
+  xlab("Frequência") +
   ylab("Plataformas") + 
   geom_text(aes(label = paste0(round(Percentagem), "%")),
             hjust = 0, size = 3.5)
@@ -116,12 +109,187 @@ ggplot(top_10, aes(x = Frequencia, y = reorder(Plataforma, Frequencia), fill = P
 
 ```{r}
 library(ggplot2)
-
-# VENDAS POR ANO
 ggplot(base, aes(x=Ano, y=Globais_Vendas)) +
   geom_bar(stat="identity", fill="#eb626c") +
-  labs(title="Vendas por ano",
+  labs(title="Vendas de jogos por ano",
        x="Ano",
-       y="Vendas")
+       y="Vendas (em milhões)")
 ```
 
+```{r}
+library(ggplot2)
+ggplot(data = base, aes(x = Ano)) + 
+  geom_bar(fill="#eb626c") +
+  labs(title = "Frequência de jogos por ano", x = "Ano", y = "Frequência")
+
+
+```
+
+```{r}
+total_na = sum(base$AN_Vendas, na.rm = TRUE)
+total_eu = sum(base$EU_Vendas, na.rm = TRUE)
+total_jp = sum(base$JP_Vendas, na.rm = TRUE)
+total_outras = sum(base$Outras_Vendas, na.rm = TRUE)
+total_sales = c(total_na, total_eu, total_jp, total_outras)
+
+percent_vendas = round((total_vendas / sum(total_vendas)) * 100, 1)
+
+labels = c("América do Norte", "Europa", "Japão", "Outros")
+labels <- paste0(labels, " (", percent_vendas, "%)")
+
+colors = c("#008fd5", "#fc4f30", "#e5ae37", "#6d904f")
+pie(total_vendas, labels = labels, col = colors, main = "Porcentagem de vendas por continente")
+
+```
+
+```{r}
+summary(base$AN_Vendas)
+summary(base$EU_Vendas)
+summary(base$JP_Vendas)
+summary(base$Outras_Vendas)
+summary(base$Globais_Vendas)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+top_10_an = base %>% 
+  arrange(desc(AN_Vendas)) %>% 
+  head(10)
+top_10_an = data.frame(top_10_an$Nome, top_10_an$AN_Vendas)
+colnames(top_10_an) = c("Nome", "Vendas")
+
+ggplot(top_10_an, aes(x = reorder(Nome, Vendas), y = Vendas)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#008fd5") +
+  xlab("Jogo") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Jogos mais vendidos na América do Norte") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+top_10_eu = base %>% 
+  arrange(desc(EU_Vendas)) %>% 
+  head(10)
+top_10_eu = data.frame(top_10_eu$Nome, top_10_eu$EU_Vendas)
+colnames(top_10_eu) = c("Nome", "Vendas")
+
+ggplot(top_10_eu, aes(x = reorder(Nome, Vendas), y = Vendas)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#fc4f30") +
+  xlab("Jogo") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Jogos mais vendidos na Europa") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+top_10_jp = base %>% 
+  arrange(desc(JP_Vendas)) %>% 
+  head(10)
+top_10_jp = data.frame(top_10_jp$Nome, top_10_jp$JP_Vendas)
+colnames(top_10_jp) = c("Nome", "Vendas")
+
+ggplot(top_10_jp, aes(x = reorder(Nome, Vendas), y = Vendas)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#e5ae37" ) +
+  xlab("Jogo") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Jogos mais vendidos no Japão") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+top_10_outros = base %>% 
+  arrange(desc(Outras_Vendas)) %>% 
+  head(10)
+top_10_outros = data.frame(top_10_outros$Nome, top_10_outros$Outras_Vendas)
+colnames(top_10_outros) = c("Nome", "Vendas")
+
+ggplot(top_10_outros, aes(x = reorder(Nome, Vendas), y = Vendas)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#6d904f") +
+  xlab("Jogo") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Jogos mais vendidos no resto do mundo") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+vendas_por_publicadora = aggregate(cbind(AN_Vendas, EU_Vendas, JP_Vendas, Outras_Vendas, Globais_Vendas) ~ Publicadora, base, sum)
+
+top_10_publicadora = vendas_por_publicadora %>% 
+  arrange(desc(Globais_Vendas)) %>% 
+  head(10)
+
+ggplot(top_10_publicadora, aes(x = reorder(Publicadora, Globais_Vendas), y = Globais_Vendas, fill = Publicadora)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9) +
+  xlab("Publicadora") +
+  theme(legend.position = "bottom") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Publicadora com mais vendas") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+vendas_por_genero = aggregate(cbind(AN_Vendas, EU_Vendas, JP_Vendas, Outras_Vendas, Globais_Vendas) ~ Genero, base, sum)
+
+top_10_genero = vendas_por_genero %>% 
+  arrange(desc(Globais_Vendas)) %>% 
+  head(10)
+
+ggplot(top_10_genero, aes(x = reorder(Genero, Globais_Vendas), y = Globais_Vendas, fill = Genero)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9) +
+  xlab("Gênero") +
+  theme(legend.position = "bottom") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Gêneros de jogos mais vendidos") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+vendas_por_plataforma = aggregate(cbind(AN_Vendas, EU_Vendas, JP_Vendas, Outras_Vendas, Globais_Vendas) ~ Plataforma, base, sum)
+vendas_por_plataforma$total_vendas = rowSums(vendas_por_plataforma[, 2:6])
+
+top_10_plataforma = vendas_por_plataforma %>% 
+  arrange(desc(Globais_Vendas)) %>% 
+  head(10)
+
+ggplot(top_10_plataforma, aes(x = reorder(Plataforma, Globais_Vendas), y = Globais_Vendas, fill = Plataforma)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9) +
+  xlab("Plataforma") +
+  theme(legend.position = "bottom") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Plataformas com jogos mais vendidos") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
+```{r}
+top_10_jogos_genero = subset(base, Genero %in% top_10_genero$Genero)
+ggplot(top_10_jogos_genero, aes(x = Ano, y = Globais_Vendas, color = Genero)) +
+  geom_line() +
+  labs(x = "Ano", y = "Vendas (em milhões)", title = "Vendas por gênero ao longo do tempo")
+```
+
+```{r}
+top_10_jogos_plataforma = subset(base, Plataforma %in% top_10_plataforma$Plataforma)
+ggplot(top_10_jogos_plataforma, aes(x = Ano, y = Globais_Vendas, color = Plataforma)) +
+  geom_line() +
+  labs(x = "Ano", y = "Vendas (em milhões)", title = "Vendas por plataforma ao longo do tempo")
+```
