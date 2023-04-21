@@ -152,6 +152,24 @@ summary(base$JP_Vendas)
 summary(base$Outras_Vendas)
 summary(base$Globais_Vendas)
 ```
+```{r}
+library(dplyr)
+library(ggplot2)
+
+top_10_gb = base %>% 
+  arrange(desc(Globais_Vendas)) %>% 
+  head(10)
+top_10_gb = data.frame(top_10_gb$Nome, top_10_gb$Globais_Vendas)
+colnames(top_10_gb) = c("Nome", "Vendas")
+
+ggplot(top_10_gb, aes(x = reorder(Nome, Vendas), y = Vendas)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "purple") +
+  xlab("Jogo") +
+  ylab("Vendas (em milhões)") +
+  ggtitle("Jogos mais vendidos no Mundo") +
+  theme(axis.text.x = element_text(angle = 25))
+```
+
 
 ```{r}
 library(dplyr)
