@@ -41,6 +41,7 @@ write.csv2(base, "base.csv", row.names = FALSE)
 ```
 
 ```{r}
+library(ggplot2)
 freq.tabela = table(base$Genero, useNA = "ifany")
 porc.tabela = round(prop.table(freq.tabela) * 100, 1)
 freq.tabela = data.frame(freq.tabela, porc.tabela)
@@ -64,6 +65,7 @@ ggplot(top_10, aes(x = Frequencia, y = reorder(Genero, Frequencia), fill = Gener
 ```
 
 ```{r}
+library(ggplot2)
 freq.tabela = table(base$Publicadora, useNA = "ifany")
 freq.tabela = data.frame(freq.tabela)
 colnames(freq.tabela) = c("Publicadora", "Frequencia")
@@ -86,6 +88,7 @@ ggplot(top_10, aes(x = Frequencia, y = reorder(Publicadora, Frequencia), fill = 
 ```
 
 ```{r}
+library(ggplot2)
 freq.tabela = table(base$Plataforma, useNA = "ifany")
 freq.tabela = data.frame(freq.tabela)
 colnames(freq.tabela) = c("Plataforma", "Frequencia")
