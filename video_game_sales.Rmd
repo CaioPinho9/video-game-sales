@@ -133,15 +133,15 @@ total_na = sum(base$AN_Vendas, na.rm = TRUE)
 total_eu = sum(base$EU_Vendas, na.rm = TRUE)
 total_jp = sum(base$JP_Vendas, na.rm = TRUE)
 total_outras = sum(base$Outras_Vendas, na.rm = TRUE)
-total_sales = c(total_na, total_eu, total_jp, total_outras)
+total_vendas = c(total_na, total_eu, total_jp, total_outras)
 
-percent_vendas = round((total_vendas / sum(total_vendas)) * 100, 1)
+total_vendas = round(total_vendas / 1000, digits=2)
 
 labels = c("América do Norte", "Europa", "Japão", "Outros")
-labels <- paste0(labels, " (", percent_vendas, "%)")
+labels <- paste0(labels, " (", total_vendas, ")")
 
 colors = c("#008fd5", "#fc4f30", "#e5ae37", "#6d904f")
-pie(total_vendas, labels = labels, col = colors, main = "Porcentagem de vendas por continente")
+pie(total_vendas, labels = labels, col = colors, main = "Total de vendas por região (em bilhões)")
 
 ```
 
@@ -152,6 +152,7 @@ summary(base$JP_Vendas)
 summary(base$Outras_Vendas)
 summary(base$Globais_Vendas)
 ```
+
 ```{r}
 library(dplyr)
 library(ggplot2)
@@ -163,11 +164,11 @@ top_10_gb = data.frame(top_10_gb$Nome, top_10_gb$Globais_Vendas)
 colnames(top_10_gb) = c("Nome", "Vendas")
 
 ggplot(top_10_gb, aes(x = reorder(Nome, Vendas), y = Vendas)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "purple") +
-  xlab("Jogo") +
+  geom_bar(stat = "identity", position = "dodge", width = 0.4, fill= "purple") +
+  xlab("Jogos") +
   ylab("Vendas (em milhões)") +
   ggtitle("Jogos mais vendidos no Mundo") +
-  theme(axis.text.x = element_text(angle = 25))
+  theme(axis.text.x = element_text(angle = 25, size = 12))
 ```
 
 
@@ -182,11 +183,11 @@ top_10_an = data.frame(top_10_an$Nome, top_10_an$AN_Vendas)
 colnames(top_10_an) = c("Nome", "Vendas")
 
 ggplot(top_10_an, aes(x = reorder(Nome, Vendas), y = Vendas)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#008fd5") +
+  geom_bar(stat = "identity", position = "dodge", width = 0.4, fill= "#008fd5") +
   xlab("Jogo") +
   ylab("Vendas (em milhões)") +
   ggtitle("Jogos mais vendidos na América do Norte") +
-  theme(axis.text.x = element_text(angle = 25))
+  theme(axis.text.x = element_text(angle = 25, size = 12))
 ```
 
 ```{r}
@@ -200,11 +201,11 @@ top_10_eu = data.frame(top_10_eu$Nome, top_10_eu$EU_Vendas)
 colnames(top_10_eu) = c("Nome", "Vendas")
 
 ggplot(top_10_eu, aes(x = reorder(Nome, Vendas), y = Vendas)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#fc4f30") +
-  xlab("Jogo") +
+  geom_bar(stat = "identity", position = "dodge", width = 0.4, fill= "#fc4f30") +
+  xlab("Jogos") +
   ylab("Vendas (em milhões)") +
   ggtitle("Jogos mais vendidos na Europa") +
-  theme(axis.text.x = element_text(angle = 25))
+  theme(axis.text.x = element_text(angle = 25, size = 12))
 ```
 
 ```{r}
@@ -218,11 +219,11 @@ top_10_jp = data.frame(top_10_jp$Nome, top_10_jp$JP_Vendas)
 colnames(top_10_jp) = c("Nome", "Vendas")
 
 ggplot(top_10_jp, aes(x = reorder(Nome, Vendas), y = Vendas)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#e5ae37" ) +
-  xlab("Jogo") +
+  geom_bar(stat = "identity", position = "dodge", width = 0.4, fill= "#e5ae37" ) +
+  xlab("Jogos") +
   ylab("Vendas (em milhões)") +
   ggtitle("Jogos mais vendidos no Japão") +
-  theme(axis.text.x = element_text(angle = 25))
+  theme(axis.text.x = element_text(angle = 25, size = 12))
 ```
 
 ```{r}
@@ -236,11 +237,11 @@ top_10_outros = data.frame(top_10_outros$Nome, top_10_outros$Outras_Vendas)
 colnames(top_10_outros) = c("Nome", "Vendas")
 
 ggplot(top_10_outros, aes(x = reorder(Nome, Vendas), y = Vendas)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.9, fill= "#6d904f") +
-  xlab("Jogo") +
+  geom_bar(stat = "identity", position = "dodge", width = 0.4, fill= "#6d904f") +
+  xlab("Jogos") +
   ylab("Vendas (em milhões)") +
   ggtitle("Jogos mais vendidos no resto do mundo") +
-  theme(axis.text.x = element_text(angle = 25))
+  theme(axis.text.x = element_text(angle = 25, size = 12))
 ```
 
 ```{r}
@@ -302,6 +303,7 @@ ggplot(top_10_plataforma, aes(x = reorder(Plataforma, Globais_Vendas), y = Globa
 ```
 
 ```{r}
+library(ggplot2)
 top_10_jogos_genero = subset(base, Genero %in% top_10_genero$Genero)
 ggplot(top_10_jogos_genero, aes(x = Ano, y = Globais_Vendas, color = Genero)) +
   geom_line() +
@@ -309,6 +311,7 @@ ggplot(top_10_jogos_genero, aes(x = Ano, y = Globais_Vendas, color = Genero)) +
 ```
 
 ```{r}
+library(ggplot2)
 top_10_jogos_plataforma = subset(base, Plataforma %in% top_10_plataforma$Plataforma)
 ggplot(top_10_jogos_plataforma, aes(x = Ano, y = Globais_Vendas, color = Plataforma)) +
   geom_line() +
